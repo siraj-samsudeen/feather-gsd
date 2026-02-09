@@ -2,7 +2,9 @@
 
 # Feather GSD
 
-**Fork of [Get Shit Done](https://github.com/glittercowboy/get-shit-done) with customizations for outcome-first roadmapping.**
+**Fork of [Get Shit Done](https://github.com/glittercowboy/get-shit-done) with opinionated customizations.**
+
+Stays in sync with upstream. Adds improvements that haven't been merged yet (or are specific to our workflow).
 
 [![Upstream](https://img.shields.io/badge/upstream-glittercowboy%2Fget--shit--done-blue?style=for-the-badge&logo=github)](https://github.com/glittercowboy/get-shit-done)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
@@ -34,12 +36,11 @@ npm run sync-upstream    # git fetch upstream + merge + build + install
 
 ## What's different from upstream
 
-| Customization | Details |
-|--------------|---------|
-| Outcome-first roadmapper | `agents/gsd-roadmapper.md` — deliverables lead with capabilities/outcomes, tools in parentheses |
-| Fork-based updates | `get-shit-done/workflows/update.md` — `/gsd:update` syncs upstream into fork instead of npx |
-| Deploy scripts | `package.json` — `npm run deploy` and `npm run sync-upstream` |
-| GitHub distribution | `hooks/dist/` committed (upstream publishes via npm only) |
+See [CHANGELOG.md](CHANGELOG.md) for the full history. Key areas:
+
+**Infrastructure** — Fork installs from GitHub (not npm), `/gsd:update` syncs upstream, `npm run deploy` for local workflow.
+
+**Agent improvements** — Customizations to agent prompts, workflows, and references. See `CLAUDE.md` for which files are safe to customize vs. which should stay in sync.
 
 ---
 
