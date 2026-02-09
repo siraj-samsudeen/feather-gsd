@@ -1,5 +1,5 @@
 <purpose>
-Create `.continue-here.md` handoff file to preserve complete work state across sessions. Enables seamless resumption with full context restoration.
+Create `.continue-here.md` handoff file to preserve complete work state across sessions. Also updates `docs/DIALOGUE.md` with a permanent session record before committing. Enables seamless resumption with full context restoration.
 </purpose>
 
 <required_reading>
@@ -90,10 +90,55 @@ timestamp=$(node ~/.claude/get-shit-done/bin/gsd-tools.js current-timestamp full
 ```
 </step>
 
+<step name="dialogue">
+**Update `docs/DIALOGUE.md` with a permanent session record.**
+
+If `docs/DIALOGUE.md` does not exist, skip this step.
+
+1. **Read** `docs/DIALOGUE.md` to find the last session number (e.g., "## Session 5: ...").
+2. **Read** recent git log since the last dialogue entry's commits to understand what was done:
+   ```bash
+   git log --oneline -20
+   ```
+3. **Auto-draft** a new session entry using the state gathered in the "gather" step. Format:
+
+```markdown
+## Session [N+1]: [Short description of what happened] ([date])
+
+### What Changed
+
+- [Bullet points from completed work + decisions made this session]
+
+### GSD Workflow State
+
+**Current position:** [Phase X, Task Y of Z]
+**Next step:** [What to do on resume]
+
+**Commits this session:**
+```
+[list of commit hashes + messages from this session]
+```
+
+---
+*Last updated: [date] — session [N+1], [brief status]*
+```
+
+4. **Show the draft to the user** via AskUserQuestion: "Here's the DIALOGUE.md entry I'll append. Approve or edit?"
+5. **On approval**, append the entry to `docs/DIALOGUE.md` (replace the existing last-updated footer line, then add the new entry + new footer).
+
+**Key rules:**
+- Don't duplicate content already in committed files (ROADMAP, REQUIREMENTS) — reference them instead.
+- Keep entries concise — developer diary, not a transcript.
+- If no meaningful decisions or work happened, keep it to 3-4 lines.
+</step>
+
 <step name="commit">
 ```bash
-node ~/.claude/get-shit-done/bin/gsd-tools.js commit "wip: [phase-name] paused at task [X]/[Y]" --files .planning/phases/*/.continue-here.md
+# Include both handoff and dialogue in the commit
+node ~/.claude/get-shit-done/bin/gsd-tools.js commit "wip: [phase-name] paused at task [X]/[Y]" --files .planning/phases/*/.continue-here.md docs/DIALOGUE.md
 ```
+
+If `docs/DIALOGUE.md` was not updated (file doesn't exist or step was skipped), omit it from --files.
 </step>
 
 <step name="confirm">
@@ -117,6 +162,8 @@ To resume: /gsd:resume-work
 <success_criteria>
 - [ ] .continue-here.md created in correct phase directory
 - [ ] All sections filled with specific content
-- [ ] Committed as WIP
+- [ ] docs/DIALOGUE.md updated with session entry (if file exists)
+- [ ] User approved the dialogue entry before it was written
+- [ ] Committed as WIP (handoff + dialogue)
 - [ ] User knows location and how to resume
 </success_criteria>
