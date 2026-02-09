@@ -54,7 +54,7 @@ npm view get-shit-done-cc version 2>/dev/null
 ```
 Couldn't check for updates (offline or npm unavailable).
 
-To update manually: `cd /Users/siraj/Desktop/NonDropBoxProjects/feather-gsd && npm run sync-upstream`
+To update manually: `cd /Users/siraj/Desktop/NonDropBoxProjects/feather-gsd && npm run deploy`
 ```
 
 Exit.
@@ -142,19 +142,19 @@ Use AskUserQuestion:
 </step>
 
 <step name="run_update">
-This is a fork-based installation. Update by syncing upstream into the fork, then deploying.
+This is a fork-based installation. The fork at `/Users/siraj/Desktop/NonDropBoxProjects/feather-gsd` is the source of truth.
 
-**Step 1: Sync upstream into fork**
-```bash
-cd /Users/siraj/Desktop/NonDropBoxProjects/feather-gsd && git fetch upstream && git merge upstream/main --no-edit
+**Important:** This step does NOT sync upstream. The user syncs upstream manually (to handle merge conflicts), then runs `/gsd:update` to install from the already-synced fork.
+
+If upstream has a newer version than what's installed, remind the user:
+```
+Upstream has a newer version. To sync:
+  cd /Users/siraj/Desktop/NonDropBoxProjects/feather-gsd
+  git fetch upstream && git merge upstream/main
+  # resolve any conflicts, then run /gsd:update again
 ```
 
-If merge has conflicts, stop and tell the user:
-```
-Merge conflict when syncing upstream. Resolve conflicts in /Users/siraj/Desktop/NonDropBoxProjects/feather-gsd, then run `/gsd:update` again.
-```
-
-**Step 2: Build and install from fork**
+**Build and install from fork:**
 
 **If LOCAL install:**
 ```bash
