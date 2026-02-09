@@ -42,6 +42,8 @@
   },
   "scripts": {
     "build:hooks": "node scripts/build-hooks.js",
+    "deploy": "npm run build:hooks && node bin/install.js --claude --global",
+    "sync-upstream": "git fetch upstream && git merge upstream/main && npm run deploy",
     "prepublishOnly": "npm run build:hooks",
     "test": "node --test get-shit-done/bin/gsd-tools.test.js"
   }

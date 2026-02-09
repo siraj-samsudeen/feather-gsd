@@ -1,15 +1,16 @@
 node_modules/
 .DS_Store
 TO-DOS.md
-CLAUDE.md
+# CLAUDE.md — committed in this fork (upstream ignores it)
 /research.claude/
 commands.html
 
 # Local test installs
 .claude/
 
-# Build artifacts (committed to npm, not git)
-hooks/dist/
+# Build artifacts — committed in this fork for GitHub-based npx distribution
+# (upstream ignores this because npm publishes it via `files` in package.json)
+# hooks/dist/
 
 # Animation assets
 animation/

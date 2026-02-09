@@ -1,42 +1,55 @@
 <div align="center">
 
-# GET SHIT DONE
+# Feather GSD
 
-**A light-weight and powerful meta-prompting, context engineering and spec-driven development system for Claude Code, OpenCode, and Gemini CLI.**
+**Fork of [Get Shit Done](https://github.com/glittercowboy/get-shit-done) with customizations for outcome-first roadmapping.**
 
-**Solves context rot — the quality degradation that happens as Claude fills its context window.**
-
-[![npm version](https://img.shields.io/npm/v/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![npm downloads](https://img.shields.io/npm/dm/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/5JJgD5svVS)
-[![GitHub stars](https://img.shields.io/github/stars/glittercowboy/get-shit-done?style=for-the-badge&logo=github&color=181717)](https://github.com/glittercowboy/get-shit-done)
+[![Upstream](https://img.shields.io/badge/upstream-glittercowboy%2Fget--shit--done-blue?style=for-the-badge&logo=github)](https://github.com/glittercowboy/get-shit-done)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
-<br>
+</div>
+
+---
+
+## Install from this fork
 
 ```bash
-npx get-shit-done-cc@latest
+npx github:siraj-samsudeen/feather-gsd --claude --global
 ```
 
-**Works on Mac, Windows, and Linux.**
+This installs to `~/.claude/` — same as upstream GSD but from this fork's source.
 
-<br>
+### Updating
 
-![GSD Install](assets/terminal.svg)
+From inside Claude Code, `/gsd:update` will sync upstream changes into this fork and reinstall.
 
-<br>
+Or manually:
 
-*"If you know clearly what you want, this WILL build it for you. No bs."*
+```bash
+cd /path/to/feather-gsd
+npm run sync-upstream    # git fetch upstream + merge + build + install
+```
 
-*"I've done SpecKit, OpenSpec and Taskmaster — this has produced the best results for me."*
+---
 
-*"By far the most powerful addition to my Claude Code. Nothing over-engineered. Literally just gets shit done."*
+## What's different from upstream
 
-<br>
+| Customization | Details |
+|--------------|---------|
+| Outcome-first roadmapper | `agents/gsd-roadmapper.md` — deliverables lead with capabilities/outcomes, tools in parentheses |
+| Fork-based updates | `get-shit-done/workflows/update.md` — `/gsd:update` syncs upstream into fork instead of npx |
+| Deploy scripts | `package.json` — `npm run deploy` and `npm run sync-upstream` |
+| GitHub distribution | `hooks/dist/` committed (upstream publishes via npm only) |
 
-**Trusted by engineers at Amazon, Google, Shopify, and Webflow.**
+---
 
-[Why I Built This](#why-i-built-this) · [How It Works](#how-it-works) · [Commands](#commands) · [Why It Works](#why-it-works)
+## For upstream documentation
+
+Everything below is from [upstream GSD](https://github.com/glittercowboy/get-shit-done).
+
+<div align="center">
+
+[How It Works](#how-it-works) · [Commands](#commands) · [Why It Works](#why-it-works)
 
 </div>
 

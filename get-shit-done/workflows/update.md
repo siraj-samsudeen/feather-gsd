@@ -54,7 +54,7 @@ npm view get-shit-done-cc version 2>/dev/null
 ```
 Couldn't check for updates (offline or npm unavailable).
 
-To update manually: `npx get-shit-done-cc --global`
+To update manually: `cd /Users/siraj/Desktop/NonDropBoxProjects/feather-gsd && npm run sync-upstream`
 ```
 
 Exit.
@@ -142,16 +142,28 @@ Use AskUserQuestion:
 </step>
 
 <step name="run_update">
-Run the update using the install type detected in step 1:
+This is a fork-based installation. Update by syncing upstream into the fork, then deploying.
+
+**Step 1: Sync upstream into fork**
+```bash
+cd /Users/siraj/Desktop/NonDropBoxProjects/feather-gsd && git fetch upstream && git merge upstream/main --no-edit
+```
+
+If merge has conflicts, stop and tell the user:
+```
+Merge conflict when syncing upstream. Resolve conflicts in /Users/siraj/Desktop/NonDropBoxProjects/feather-gsd, then run `/gsd:update` again.
+```
+
+**Step 2: Build and install from fork**
 
 **If LOCAL install:**
 ```bash
-npx get-shit-done-cc --local
+cd /Users/siraj/Desktop/NonDropBoxProjects/feather-gsd && npm run build:hooks && node bin/install.js --claude --local
 ```
 
 **If GLOBAL install (or unknown):**
 ```bash
-npx get-shit-done-cc --global
+cd /Users/siraj/Desktop/NonDropBoxProjects/feather-gsd && npm run build:hooks && node bin/install.js --claude --global
 ```
 
 Capture output. If install fails, show error and exit.
