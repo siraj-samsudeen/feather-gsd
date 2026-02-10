@@ -52,3 +52,44 @@ When syncing upstream, keep our `.gitignore` if there's a conflict on this line.
 - `get-shit-done/workflows/*.md` — Workflow orchestration
 - `get-shit-done/references/*.md` — Reference documentation
 - `get-shit-done/templates/*.md` — Template files
+
+## Quality enforcement (Feather integration)
+
+This fork adds a quality enforcement layer from Feather — all features gated by config, disabled by default. Existing GSD behavior is unchanged unless you enable quality features.
+
+### Quick start
+
+```
+/gsd:setup-quality          # Interactive — choose minimal/standard/full preset
+/gsd:setup-quality --full   # Enable everything
+```
+
+### Features (all config-gated)
+
+| Feature | Config key | Commands |
+|---------|-----------|----------|
+| EARS Specs | `quality.specs` | `/gsd:create-spec`, `/gsd:derive-tests` |
+| Three-tier TDD | `quality.tdd_mode` | off / basic / full |
+| Two-stage review | `quality.two_stage_review` | Automatic in executor |
+| Structured feedback | `quality.feedback` | `/gsd:feedback`, `/gsd:polish` |
+| UI mockups | `quality.mockups` | `/gsd:mockup` |
+| Design exploration | `quality.design_exploration` | Automatic in discuss-phase |
+| Quality checkpoints | `quality.checkpoints` | CP1 (pre-impl) + CP2 (post-impl) |
+| Coverage threshold | `quality.coverage_threshold` | Enforced in `tdd_mode: "full"` |
+
+### Config location
+
+`.planning/config.json` → `quality` section. All values default to off/false.
+
+### New agents
+
+- `gsd-test-deriver` — Expands EARS specs into Gherkin scenarios
+- `gsd-spec-reviewer` — Reviews implementation against spec
+- `gsd-code-reviewer` — Reviews code quality
+
+### New artifact locations
+
+- `.planning/phases/XX-name/{phase}-SPEC.md` — EARS spec
+- `.planning/phases/XX-name/{phase}-GHERKIN.md` — Gherkin scenarios
+- `.feedback/` — Structured feedback items (open/in-progress/resolved)
+- `docs/mockups/` — HTML mockups
