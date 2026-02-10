@@ -347,6 +347,52 @@ node ~/.claude/get-shit-done/bin/gsd-tools.js commit "chore: add project config"
 
 **Note:** Run `/gsd:settings` anytime to update these preferences.
 
+**Round 3 — Quality enforcement (optional):**
+
+After workflow preferences, offer quality setup:
+
+```
+questions: [
+  {
+    header: "Quality",
+    question: "Enable quality enforcement features? (TDD, specs, review, feedback)",
+    multiSelect: false,
+    options: [
+      { label: "Skip for now (Recommended)", description: "Configure later with /gsd:setup-quality" },
+      { label: "Minimal", description: "Basic TDD + feedback tracking" },
+      { label: "Standard", description: "TDD + specs + feedback + checkpoints" },
+      { label: "Full", description: "All quality features (TDD hooks, specs, review, mockups)" }
+    ]
+  }
+]
+```
+
+**If not "Skip for now":** Apply the selected quality preset to config.json:
+
+| Feature | Minimal | Standard | Full |
+|---------|---------|----------|------|
+| tdd_mode | basic | basic | full |
+| specs | false | true | true |
+| two_stage_review | false | false | true |
+| feedback | true | true | true |
+| mockups | false | false | true |
+| design_exploration | false | false | true |
+| checkpoints | false | true | true |
+| coverage_threshold | 100 | 100 | 100 |
+
+```bash
+node ~/.claude/get-shit-done/bin/gsd-tools.js config-set quality.tdd_mode "{value}"
+node ~/.claude/get-shit-done/bin/gsd-tools.js config-set quality.specs {true/false}
+node ~/.claude/get-shit-done/bin/gsd-tools.js config-set quality.two_stage_review {true/false}
+node ~/.claude/get-shit-done/bin/gsd-tools.js config-set quality.feedback {true/false}
+node ~/.claude/get-shit-done/bin/gsd-tools.js config-set quality.mockups {true/false}
+node ~/.claude/get-shit-done/bin/gsd-tools.js config-set quality.design_exploration {true/false}
+node ~/.claude/get-shit-done/bin/gsd-tools.js config-set quality.checkpoints {true/false}
+node ~/.claude/get-shit-done/bin/gsd-tools.js config-set quality.coverage_threshold 100
+```
+
+**If "Full" selected and project has package.json:** Suggest running `/gsd:setup-tdd-hooks` after project init.
+
 ## 5.5. Resolve Model Profile
 
 Use models from init: `researcher_model`, `synthesizer_model`, `roadmapper_model`.
