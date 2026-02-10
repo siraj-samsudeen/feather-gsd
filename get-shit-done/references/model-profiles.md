@@ -17,6 +17,9 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
 | gsd-verifier | sonnet | sonnet | haiku |
 | gsd-plan-checker | sonnet | sonnet | haiku |
 | gsd-integration-checker | sonnet | sonnet | haiku |
+| gsd-spec-reviewer | sonnet | sonnet | haiku |
+| gsd-code-reviewer | sonnet | sonnet | haiku |
+| gsd-test-deriver | opus | sonnet | sonnet |
 
 ## Profile Philosophy
 
@@ -71,3 +74,9 @@ Verification requires goal-backward reasoning - checking if code *delivers* what
 
 **Why Haiku for gsd-codebase-mapper?**
 Read-only exploration and pattern extraction. No reasoning required, just structured output from file contents.
+
+**Why Opus for gsd-test-deriver?**
+Test derivation from EARS specs requires understanding requirement semantics, edge cases, and generating comprehensive Gherkin scenarios. Quality of the test contract directly impacts implementation quality.
+
+**Why Sonnet for gsd-spec-reviewer and gsd-code-reviewer?**
+Reviewers compare implementation against existing specs and quality standards. The specs provide explicit criteria — the reviewer follows them, similar to verification.

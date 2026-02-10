@@ -31,5 +31,15 @@
   "safety": {
     "always_confirm_destructive": true,
     "always_confirm_external_services": true
+  },
+  "quality": {
+    "tdd_mode": "off",
+    "specs": false,
+    "two_stage_review": false,
+    "feedback": false,
+    "mockups": false,
+    "design_exploration": false,
+    "checkpoints": false,
+    "coverage_threshold": 100
   }
 }

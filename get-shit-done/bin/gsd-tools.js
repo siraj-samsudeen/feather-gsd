@@ -134,6 +134,9 @@ const MODEL_PROFILES = {
   'gsd-verifier':             { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
   'gsd-plan-checker':         { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
   'gsd-integration-checker':  { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
+  'gsd-spec-reviewer':        { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
+  'gsd-code-reviewer':        { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku' },
+  'gsd-test-deriver':         { quality: 'opus',   balanced: 'sonnet', budget: 'sonnet' },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -168,6 +171,14 @@ function loadConfig(cwd) {
     verifier: true,
     parallelization: true,
     brave_search: false,
+    quality_tdd_mode: 'off',
+    quality_specs: false,
+    quality_two_stage_review: false,
+    quality_feedback: false,
+    quality_mockups: false,
+    quality_design_exploration: false,
+    quality_checkpoints: false,
+    quality_coverage_threshold: 100,
   };
 
   try {
@@ -201,6 +212,14 @@ function loadConfig(cwd) {
       verifier: get('verifier', { section: 'workflow', field: 'verifier' }) ?? defaults.verifier,
       parallelization,
       brave_search: get('brave_search') ?? defaults.brave_search,
+      quality_tdd_mode: get('quality_tdd_mode', { section: 'quality', field: 'tdd_mode' }) ?? defaults.quality_tdd_mode,
+      quality_specs: get('quality_specs', { section: 'quality', field: 'specs' }) ?? defaults.quality_specs,
+      quality_two_stage_review: get('quality_two_stage_review', { section: 'quality', field: 'two_stage_review' }) ?? defaults.quality_two_stage_review,
+      quality_feedback: get('quality_feedback', { section: 'quality', field: 'feedback' }) ?? defaults.quality_feedback,
+      quality_mockups: get('quality_mockups', { section: 'quality', field: 'mockups' }) ?? defaults.quality_mockups,
+      quality_design_exploration: get('quality_design_exploration', { section: 'quality', field: 'design_exploration' }) ?? defaults.quality_design_exploration,
+      quality_checkpoints: get('quality_checkpoints', { section: 'quality', field: 'checkpoints' }) ?? defaults.quality_checkpoints,
+      quality_coverage_threshold: get('quality_coverage_threshold', { section: 'quality', field: 'coverage_threshold' }) ?? defaults.quality_coverage_threshold,
     };
   } catch {
     return defaults;
@@ -608,6 +627,16 @@ function cmdConfigEnsureSection(cwd, raw) {
     },
     parallelization: true,
     brave_search: hasBraveSearch,
+    quality: {
+      tdd_mode: 'off',
+      specs: false,
+      two_stage_review: false,
+      feedback: false,
+      mockups: false,
+      design_exploration: false,
+      checkpoints: false,
+      coverage_threshold: 100,
+    },
   };
 
   try {
@@ -982,6 +1011,14 @@ function cmdStateLoad(cwd, raw) {
       `research=${c.research}`,
       `plan_checker=${c.plan_checker}`,
       `verifier=${c.verifier}`,
+      `quality_tdd_mode=${c.quality_tdd_mode}`,
+      `quality_specs=${c.quality_specs}`,
+      `quality_two_stage_review=${c.quality_two_stage_review}`,
+      `quality_feedback=${c.quality_feedback}`,
+      `quality_mockups=${c.quality_mockups}`,
+      `quality_design_exploration=${c.quality_design_exploration}`,
+      `quality_checkpoints=${c.quality_checkpoints}`,
+      `quality_coverage_threshold=${c.quality_coverage_threshold}`,
       `config_exists=${configExists}`,
       `roadmap_exists=${roadmapExists}`,
       `state_exists=${stateExists}`,
@@ -3505,6 +3542,8 @@ function findPhaseInternal(cwd, phase) {
     const hasResearch = phaseFiles.some(f => f.endsWith('-RESEARCH.md') || f === 'RESEARCH.md');
     const hasContext = phaseFiles.some(f => f.endsWith('-CONTEXT.md') || f === 'CONTEXT.md');
     const hasVerification = phaseFiles.some(f => f.endsWith('-VERIFICATION.md') || f === 'VERIFICATION.md');
+    const hasSpec = phaseFiles.some(f => f.endsWith('-SPEC.md') || f === 'SPEC.md');
+    const hasGherkin = phaseFiles.some(f => f.endsWith('-GHERKIN.md') || f === 'GHERKIN.md');
 
     // Determine incomplete plans (plans without matching summaries)
     const completedPlanIds = new Set(
@@ -3527,6 +3566,8 @@ function findPhaseInternal(cwd, phase) {
       has_research: hasResearch,
       has_context: hasContext,
       has_verification: hasVerification,
+      has_spec: hasSpec,
+      has_gherkin: hasGherkin,
     };
   } catch {
     return null;
@@ -3575,6 +3616,9 @@ function cmdInitExecutePhase(cwd, phase, includes, raw) {
     // Models
     executor_model: resolveModelInternal(cwd, 'gsd-executor'),
     verifier_model: resolveModelInternal(cwd, 'gsd-verifier'),
+    spec_reviewer_model: resolveModelInternal(cwd, 'gsd-spec-reviewer'),
+    code_reviewer_model: resolveModelInternal(cwd, 'gsd-code-reviewer'),
+    test_deriver_model: resolveModelInternal(cwd, 'gsd-test-deriver'),
 
     // Config flags
     commit_docs: config.commit_docs,
@@ -3583,6 +3627,16 @@ function cmdInitExecutePhase(cwd, phase, includes, raw) {
     phase_branch_template: config.phase_branch_template,
     milestone_branch_template: config.milestone_branch_template,
     verifier_enabled: config.verifier,
+
+    // Quality config
+    quality_tdd_mode: config.quality_tdd_mode,
+    quality_specs: config.quality_specs,
+    quality_two_stage_review: config.quality_two_stage_review,
+    quality_feedback: config.quality_feedback,
+    quality_mockups: config.quality_mockups,
+    quality_design_exploration: config.quality_design_exploration,
+    quality_checkpoints: config.quality_checkpoints,
+    quality_coverage_threshold: config.quality_coverage_threshold,
 
     // Phase info
     phase_found: !!phaseInfo,
@@ -3653,6 +3707,14 @@ function cmdInitPlanPhase(cwd, phase, includes, raw) {
     plan_checker_enabled: config.plan_checker,
     commit_docs: config.commit_docs,
 
+    // Quality config
+    quality_tdd_mode: config.quality_tdd_mode,
+    quality_specs: config.quality_specs,
+    quality_two_stage_review: config.quality_two_stage_review,
+    quality_feedback: config.quality_feedback,
+    quality_checkpoints: config.quality_checkpoints,
+    quality_coverage_threshold: config.quality_coverage_threshold,
+
     // Phase info
     phase_found: !!phaseInfo,
     phase_dir: phaseInfo?.directory || null,
@@ -3664,6 +3726,8 @@ function cmdInitPlanPhase(cwd, phase, includes, raw) {
     // Existing artifacts
     has_research: phaseInfo?.has_research || false,
     has_context: phaseInfo?.has_context || false,
+    has_spec: phaseInfo?.has_spec || false,
+    has_gherkin: phaseInfo?.has_gherkin || false,
     has_plans: (phaseInfo?.plans?.length || 0) > 0,
     plan_count: phaseInfo?.plans?.length || 0,
 
@@ -3723,6 +3787,26 @@ function cmdInitPlanPhase(cwd, phase, includes, raw) {
       const uatFile = files.find(f => f.endsWith('-UAT.md') || f === 'UAT.md');
       if (uatFile) {
         result.uat_content = safeReadFile(path.join(phaseDirFull, uatFile));
+      }
+    } catch {}
+  }
+  if (includes.has('spec') && phaseInfo?.directory) {
+    const phaseDirFull = path.join(cwd, phaseInfo.directory);
+    try {
+      const files = fs.readdirSync(phaseDirFull);
+      const specFile = files.find(f => f.endsWith('-SPEC.md') || f === 'SPEC.md');
+      if (specFile) {
+        result.spec_content = safeReadFile(path.join(phaseDirFull, specFile));
+      }
+    } catch {}
+  }
+  if (includes.has('gherkin') && phaseInfo?.directory) {
+    const phaseDirFull = path.join(cwd, phaseInfo.directory);
+    try {
+      const files = fs.readdirSync(phaseDirFull);
+      const gherkinFile = files.find(f => f.endsWith('-GHERKIN.md') || f === 'GHERKIN.md');
+      if (gherkinFile) {
+        result.gherkin_content = safeReadFile(path.join(phaseDirFull, gherkinFile));
       }
     } catch {}
   }

@@ -191,4 +191,76 @@ Squash merge is recommended — keeps main branch history clean while preserving
 
 </branching_strategy_behavior>
 
+<quality_config>
+
+Quality enforcement configuration. All features default to off — existing projects see no change.
+
+<config_schema>
+```json
+"quality": {
+  "tdd_mode": "off",
+  "specs": false,
+  "two_stage_review": false,
+  "feedback": false,
+  "mockups": false,
+  "design_exploration": false,
+  "checkpoints": false,
+  "coverage_threshold": 100
+}
+```
+
+| Option | Default | Values | Description |
+|--------|---------|--------|-------------|
+| `tdd_mode` | `"off"` | `"off"`, `"basic"`, `"full"` | TDD enforcement tier |
+| `specs` | `false` | boolean | Enable EARS spec creation and Gherkin derivation |
+| `two_stage_review` | `false` | boolean | Separate spec-compliance and code-quality reviewers |
+| `feedback` | `false` | boolean | Structured feedback tracking in `.feedback/` |
+| `mockups` | `false` | boolean | HTML mockups via Playwright before implementation |
+| `design_exploration` | `false` | boolean | Present 2-3 approaches during discuss-phase |
+| `checkpoints` | `false` | boolean | Artifact gates before/after implementation |
+| `coverage_threshold` | `100` | 0-100 | Minimum test coverage percentage (used with tdd_mode) |
+</config_schema>
+
+<tdd_mode_tiers>
+
+**`off` (default):** No TDD enforcement. Tests written as convenient.
+
+**`basic`:** Prompt-based RED-GREEN-REFACTOR cycle. Executor follows TDD pattern but no enforcement hooks. Equivalent to GSD's existing `tdd="true"` task attribute.
+
+**`full`:** Hook-enforced TDD with:
+- tdd-guard blocks implementation writes when tests fail
+- Test contract is read-only (spec-derived tests cannot be modified during GREEN phase)
+- Coverage gate after GREEN phase (must meet `coverage_threshold`)
+- Gherkin scenario IDs traced through test describe/it blocks
+
+</tdd_mode_tiers>
+
+<presets>
+
+Configure quality via `/gsd:setup-quality` with presets:
+
+| Preset | tdd_mode | specs | two_stage_review | feedback | mockups | design_exploration | checkpoints |
+|--------|----------|-------|------------------|----------|---------|-------------------|-------------|
+| `minimal` | basic | false | false | true | false | false | false |
+| `standard` | basic | true | false | true | false | false | true |
+| `full` | full | true | true | true | true | true | true |
+
+</presets>
+
+<quality_artifacts>
+
+When quality features are enabled, additional artifacts appear in phase directories:
+
+| Feature | Artifact | Location |
+|---------|----------|----------|
+| `specs` | EARS specification | `.planning/phases/XX-name/{phase}-SPEC.md` |
+| `specs` | Gherkin scenarios | `.planning/phases/XX-name/{phase}-GHERKIN.md` |
+| `feedback` | Feedback items | `.feedback/open/*.md` |
+| `feedback` | Feedback dashboard | `.feedback/INDEX.md` |
+| `mockups` | HTML mockups | `docs/mockups/` |
+
+</quality_artifacts>
+
+</quality_config>
+
 </planning_config>
