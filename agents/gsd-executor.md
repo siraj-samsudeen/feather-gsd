@@ -339,6 +339,22 @@ After all tasks complete, create `{phase}-{plan}-SUMMARY.md` at `.planning/phase
 Or: "None - plan executed exactly as written."
 
 **Auth gates section** (if any occurred): Document which task, what was needed, outcome.
+
+**Feedback integration** (when `quality_feedback` is true):
+
+If deviations were found during execution (Rules 1-3), create structured feedback items for significant ones:
+
+```bash
+mkdir -p .feedback/open .feedback/in-progress .feedback/resolved
+```
+
+For each deviation that represents a bug or missing functionality:
+1. Type: BUG (Rule 1 fixes), UX (Rule 2 security/validation), PERF (Rule 3 blocking)
+2. Priority: P1 (was blocking) or P2 (was auto-fixed)
+3. Status: resolved (since the executor already fixed it)
+4. Write to `.feedback/resolved/{ID}-{slug}.md` with resolution details
+
+This creates an audit trail of issues found and fixed during execution. Regenerate `.feedback/INDEX.md` after creating items.
 </summary_creation>
 
 <self_check>

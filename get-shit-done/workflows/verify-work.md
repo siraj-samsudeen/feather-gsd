@@ -290,9 +290,50 @@ Clear Current Test section:
 [testing complete]
 ```
 
-Commit the UAT file:
+**If quality_feedback is true AND issues > 0:**
+
+Create structured feedback items for each issue:
+
+```bash
+mkdir -p .feedback/open .feedback/in-progress .feedback/resolved
+```
+
+For each issue in Gaps section:
+1. Determine type from severity: blocker/major → BUG, minor → UX, cosmetic → POLISH
+2. Determine priority: blocker → P0, major → P1, minor → P2, cosmetic → P3
+3. Generate ID: `{TYPE}-{NNN}` where NNN is next available number
+4. Generate slug from test name (lowercase, hyphens)
+5. Write `.feedback/open/{ID}-{slug}.md` using feedback-item template with:
+   - id, type, priority, status: open
+   - phase: current phase
+   - spec_group: from task spec_ref if available
+   - source: UAT verification
+   - Description: expected behavior + reported issue
+   - Steps to reproduce: from test expected behavior
+
+After creating all feedback items, regenerate `.feedback/INDEX.md`.
+
+**If quality_specs is true:**
+
+Group UAT results by spec capability IDs when presenting summary. Parse spec_ref from PLAN.md tasks to group tests under their spec sections:
+
+```
+### By Spec Group
+| Spec ID | Tests | Passed | Issues |
+|---------|-------|--------|--------|
+| TL-1    | 3     | 2      | 1      |
+| TL-2    | 2     | 2      | 0      |
+```
+
+Commit the UAT file (and feedback files if created):
 ```bash
 node ~/.claude/get-shit-done/bin/gsd-tools.js commit "test({phase}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase}-UAT.md"
+```
+
+If feedback files were created:
+```bash
+git add .feedback/
+git commit -m "feedback({phase}): create {N} items from UAT verification"
 ```
 
 Present summary:
