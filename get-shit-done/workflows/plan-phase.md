@@ -379,7 +379,50 @@ Display: `Max iterations reached. {N} issues remain:` + issue list
 
 Offer: 1) Force proceed, 2) Provide guidance and retry, 3) Abandon
 
-## 13. Present Final Status
+## 13. Quality Checkpoint CP1 (Pre-Implementation Gate)
+
+**Skip if:** `quality_checkpoints` is false (from init).
+
+Before presenting final status, verify all required artifacts exist based on quality config:
+
+**Always required:**
+- [ ] CONTEXT.md exists in phase directory
+- [ ] At least one PLAN.md exists
+
+**When `quality_specs` is true:**
+- [ ] SPEC.md exists in phase directory
+- [ ] GHERKIN.md exists in phase directory
+
+**When `quality_mockups` is true (from state load):**
+- [ ] Mockup file exists in `docs/mockups/{phase_slug}.*`
+
+**If any required artifact is missing:**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ GSD ► CP1 FAILED — Missing Artifacts
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Phase {X}: {Name} cannot proceed to execution.
+
+Missing:
+- [ ] {artifact} — run {command to create}
+
+Create missing artifacts before executing.
+```
+
+Use AskUserQuestion:
+- header: "CP1"
+- question: "Missing artifacts. How to proceed?"
+- options:
+  - "Create missing" — Exit with instructions for each missing artifact
+  - "Skip checkpoint" — Proceed anyway (records override in PLAN.md)
+
+If "Skip checkpoint": Add `cp1_override: true` to plan frontmatter and continue.
+
+**If all artifacts present:** Display "CP1 passed" and continue.
+
+## 14. Present Final Status
 
 Route to `<offer_next>`.
 

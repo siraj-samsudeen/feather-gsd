@@ -286,6 +286,79 @@ Also: `/gsd:verify-work {X}` — manual testing first
 Gap closure cycle: `/gsd:plan-phase {X} --gaps` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/gsd:execute-phase {X} --gaps-only` → verifier re-runs.
 </step>
 
+<step name="quality_checkpoint_cp2">
+**Skip if:** `quality_checkpoints` is false (from init).
+
+**CP2: Post-Implementation Quality Gate**
+
+After verifier completes but before marking phase complete, run automated quality checks:
+
+**1. Automated checks:**
+```bash
+# Tests pass
+npm run test:run 2>/dev/null || echo "NO_TESTS"
+
+# Type check (if TypeScript)
+npx tsc --noEmit 2>/dev/null || echo "NO_TYPES"
+
+# Lint
+npm run lint 2>/dev/null || echo "NO_LINT"
+
+# Build
+npm run build 2>/dev/null || echo "NO_BUILD"
+```
+
+**2. Coverage check (when quality_tdd_mode is "full"):**
+```bash
+npm run test:coverage 2>/dev/null
+```
+Verify coverage meets `quality_coverage_threshold` for files modified in this phase.
+
+**3. Spec traceability check (when quality_specs is true):**
+Verify that every EARS requirement ID from SPEC.md has at least one test referencing it:
+```bash
+# Extract spec IDs from SPEC.md
+grep -oP '[A-Z]+-\d+' ${phase_dir}/*-SPEC.md | sort -u
+
+# Check test files reference them
+grep -r 'describe\|it(' src/ test/ --include="*.test.*" | grep -oP '[A-Z]+-\d+' | sort -u
+```
+Report any spec IDs with no test coverage.
+
+**4. Present CP2 results:**
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ GSD ► CP2 RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| Check | Status |
+|-------|--------|
+| Tests | PASS / FAIL / N/A |
+| Types | PASS / FAIL / N/A |
+| Lint  | PASS / FAIL / N/A |
+| Build | PASS / FAIL / N/A |
+| Coverage ({threshold}%) | {actual}% |
+| Spec Traceability | {covered}/{total} IDs |
+```
+
+**If any FAIL:** Report issues. Use AskUserQuestion:
+- header: "CP2"
+- question: "Quality checks failed. How to proceed?"
+- options:
+  - "Fix issues" — Create gap plan for failed checks
+  - "Override" — Proceed despite failures (records override)
+
+**5. Feedback collection (when quality_feedback is true):**
+
+After CP2, offer structured feedback:
+```
+Any issues noticed during this phase? /gsd:feedback add
+```
+
+**If all pass or overridden:** Continue to update_roadmap.
+</step>
+
 <step name="update_roadmap">
 Mark phase complete in ROADMAP.md (date, status).
 
