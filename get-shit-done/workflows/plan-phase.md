@@ -15,12 +15,12 @@ Read all files referenced by the invoking prompt's execution_context before star
 Load all context in one call (include file contents to avoid redundant reads):
 
 ```bash
-INIT=$(node ~/.claude/get-shit-done/bin/gsd-tools.js init plan-phase "$PHASE" --include state,roadmap,requirements,context,research,verification,uat)
+INIT=$(node ~/.claude/get-shit-done/bin/gsd-tools.js init plan-phase "$PHASE" --include state,roadmap,requirements,context,research,verification,uat,spec,gherkin)
 ```
 
-Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `plan_checker_enabled`, `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_plans`, `plan_count`, `planning_exists`, `roadmap_exists`.
+Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `plan_checker_enabled`, `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_spec`, `has_gherkin`, `has_plans`, `plan_count`, `planning_exists`, `roadmap_exists`, `quality_specs`, `quality_tdd_mode`, `quality_checkpoints`, `quality_coverage_threshold`.
 
-**File contents (from --include):** `state_content`, `roadmap_content`, `requirements_content`, `context_content`, `research_content`, `verification_content`, `uat_content`. These are null if files don't exist.
+**File contents (from --include):** `state_content`, `roadmap_content`, `requirements_content`, `context_content`, `research_content`, `verification_content`, `uat_content`, `spec_content`, `gherkin_content`. These are null if files don't exist.
 
 **If `planning_exists` is false:** Error — run `/gsd:new-project` first.
 
@@ -121,6 +121,68 @@ Task(
 
 - **`## RESEARCH COMPLETE`:** Display confirmation, continue to step 6
 - **`## RESEARCH BLOCKED`:** Display blocker, offer: 1) Provide context, 2) Skip research, 3) Abort
+
+## 5.5. Handle Spec and Gherkin (Quality)
+
+**Skip if:** `quality_specs` is false (from init) or `--gaps` flag.
+
+Parse from INIT: `quality_specs`, `has_spec`, `has_gherkin`, `spec_content`, `gherkin_content`.
+
+**If `quality_specs` is true AND `has_spec` is false:**
+Suggest: "No SPEC.md found. Run `/gsd:create-spec {N}` to create one, or continue without specs."
+
+Use AskUserQuestion:
+- header: "Spec"
+- question: "Create EARS spec before planning?"
+- options:
+  - "Skip spec" — Plan from CONTEXT.md directly
+  - "Create spec first" — Exit to /gsd:create-spec
+
+If "Create spec first": Exit with instruction to run `/gsd:create-spec {N}`.
+
+**If `has_spec` is true AND `has_gherkin` is false:**
+Auto-derive Gherkin by spawning gsd-test-deriver:
+
+```bash
+MODEL=$(node ~/.claude/get-shit-done/bin/gsd-tools.js resolve-model gsd-test-deriver)
+```
+
+```
+Task(prompt="
+First, read ~/.claude/agents/gsd-test-deriver.md for your role and instructions.
+
+<spec_content>
+{spec_content}
+</spec_content>
+
+<context>
+{context_content or 'No CONTEXT.md'}
+</context>
+
+<output>
+phase_dir: {phase_dir}
+phase: {padded_phase}
+Write to: {phase_dir}/{padded_phase}-GHERKIN.md
+Use template: ~/.claude/get-shit-done/templates/gherkin.md
+</output>
+", subagent_type="gsd-test-deriver", model="{MODEL}", description="Derive Gherkin from spec")
+```
+
+Present derived Gherkin for user approval (GATE):
+- "Approve" → commit and continue to planning
+- "Adjust" → edit and re-present
+- "Skip" → continue without Gherkin
+
+If approved:
+```bash
+node ~/.claude/get-shit-done/bin/gsd-tools.js commit "docs({phase}): derive Gherkin scenarios" --files {phase_dir}/{padded_phase}-GHERKIN.md
+```
+
+Re-load spec and gherkin content for planner:
+```bash
+SPEC_CONTENT=$(cat "{phase_dir}/{padded_phase}-SPEC.md" 2>/dev/null || echo "")
+GHERKIN_CONTENT=$(cat "{phase_dir}/{padded_phase}-GHERKIN.md" 2>/dev/null || echo "")
+```
 
 ## 6. Check Existing Plans
 
