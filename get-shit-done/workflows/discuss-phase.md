@@ -394,6 +394,60 @@ node ~/.claude/get-shit-done/bin/gsd-tools.js commit "docs(${padded_phase}): cap
 Confirm: "Committed: docs(${padded_phase}): capture phase context"
 </step>
 
+<step name="quality_extensions">
+**Load quality config:**
+
+```bash
+INIT=$(node ~/.claude/get-shit-done/bin/gsd-tools.js state load)
+```
+
+Parse quality flags.
+
+**If `quality_design_exploration` is true:**
+
+Before writing CONTEXT.md, present 2-3 approaches with trade-offs for the key architectural decisions in this phase. Let the user evaluate options before locking decisions.
+
+Format:
+```
+## Approach A: {Name}
+- How: {brief description}
+- Pros: {advantages}
+- Cons: {disadvantages}
+- Best for: {when to use}
+
+## Approach B: {Name}
+- How: {brief description}
+- Pros: {advantages}
+- Cons: {disadvantages}
+- Best for: {when to use}
+
+Which approach? (or mix)
+```
+
+Record the chosen approach in CONTEXT.md under "Implementation Decisions".
+
+**After committing CONTEXT.md, suggest next steps based on quality config:**
+
+```
+Next steps:
+```
+
+**If `quality_specs` is true:**
+```
+- /gsd:create-spec {N} — create EARS spec for this phase
+```
+
+**If `quality_mockups` is true:**
+```
+- /gsd:mockup {N} — create visual mockup before implementation
+```
+
+**Always:**
+```
+- /gsd:plan-phase {N} — plan implementation
+```
+</step>
+
 </process>
 
 <success_criteria>
@@ -404,5 +458,6 @@ Confirm: "Committed: docs(${padded_phase}): capture phase context"
 - Scope creep redirected to deferred ideas
 - CONTEXT.md captures actual decisions, not vague vision
 - Deferred ideas preserved for future phases
-- User knows next steps
+- If design_exploration: approaches presented and choice recorded
+- User knows next steps (with quality-aware suggestions)
 </success_criteria>
